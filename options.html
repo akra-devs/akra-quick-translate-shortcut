@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akra Quick Translate Options</title>
+  </head>
+  <body>
+    <main class="options-shell">
+      <header>
+        <p class="eyebrow">Akra Quick Translate</p>
+        <h1>Options</h1>
+      </header>
+
+      <form id="settings-form" class="settings-panel">
+        <label class="field">
+          <span>Target language</span>
+          <select id="target-language" name="targetLanguage"></select>
+        </label>
+
+        <label class="toggle-row">
+          <input id="show-overlay" type="checkbox" name="showOverlay" />
+          <span>Status overlay</span>
+        </label>
+
+        <div class="actions">
+          <button type="submit">Save</button>
+          <a href="chrome://extensions/shortcuts" target="_blank" rel="noreferrer">Keyboard shortcuts</a>
+        </div>
+
+        <p id="status" role="status" aria-live="polite"></p>
+      </form>
+    </main>
+
+    <script type="module" src="/src/options.ts"></script>
+  </body>
+</html>
