@@ -7,48 +7,59 @@
   </head>
   <body>
     <main class="options-shell">
-      <header>
+      <aside class="options-hero">
+        <img class="hero-icon" src="/icons/icon128.png" alt="" aria-hidden="true" />
         <p class="eyebrow">Akra Quick Translate</p>
         <h1 data-i18n="optionsHeading">Translation</h1>
-      </header>
-
-      <form id="settings-form" class="settings-panel">
-        <section class="language-route" aria-label="Translation languages" data-i18n-aria-label="translationLanguages">
-          <label class="field">
-            <span data-i18n="source">Source</span>
-            <select id="source-language" name="sourceLanguage"></select>
-          </label>
-
-          <div class="route-arrow" aria-hidden="true">&rarr;</div>
-
-          <label class="field">
-            <span data-i18n="target">Target</span>
-            <select id="target-language" name="targetLanguage"></select>
-          </label>
-        </section>
-
-        <label class="toggle-row">
-          <input id="show-overlay" type="checkbox" name="showOverlay" />
-          <span data-i18n="statusOverlay">Status overlay</span>
-        </label>
-
-        <div class="actions">
-          <button type="submit" data-i18n="save">Save</button>
-          <button id="open-shortcuts" class="shortcut-button" type="button">
-            <span data-i18n="shortcut">Shortcut</span>
-            <kbd id="shortcut-label">Alt+T</kbd>
-          </button>
+        <div class="shortcut-callout">
+          <span data-i18n="shortcut">Shortcut</span>
+          <kbd id="hero-shortcut-label">Alt+T</kbd>
         </div>
+      </aside>
 
-        <p id="status" role="status" aria-live="polite"></p>
-      </form>
+      <section class="options-content">
+        <header>
+          <p class="eyebrow" data-i18n="settings">Settings</p>
+          <h2 data-i18n="translationLanguages">Translation languages</h2>
+        </header>
 
-      <nav class="options-links" aria-label="Product links" data-i18n-aria-label="productLinks">
-        <a id="product-link" href="https://akra.kr/quick-translate" target="_blank" rel="noreferrer" data-i18n="website">Website</a>
-        <a id="support-link" href="https://akra.kr/quick-translate/support" target="_blank" rel="noreferrer" data-i18n="support">Support</a>
-        <a id="privacy-link" href="https://akra.kr/quick-translate/privacy" target="_blank" rel="noreferrer" data-i18n="privacy">Privacy</a>
-        <a id="support-akra-link" href="https://ctee.kr/place/akra/donation" target="_blank" rel="noreferrer" data-i18n="supportAkra">Support Akra</a>
-      </nav>
+        <form id="settings-form" class="settings-panel">
+          <section class="language-route" aria-label="Translation languages" data-i18n-aria-label="translationLanguages">
+            <label class="field">
+              <span data-i18n="source">Source</span>
+              <select id="source-language" name="sourceLanguage"></select>
+            </label>
+
+            <div class="route-arrow" aria-hidden="true">&rarr;</div>
+
+            <label class="field">
+              <span data-i18n="target">Target</span>
+              <select id="target-language" name="targetLanguage"></select>
+            </label>
+          </section>
+
+          <label class="toggle-row">
+            <input id="show-overlay" type="checkbox" name="showOverlay" />
+            <span data-i18n="statusOverlay">Status overlay</span>
+          </label>
+
+          <div class="actions">
+            <button type="submit" data-i18n="save">Save</button>
+            <button id="open-shortcuts" class="shortcut-button" type="button">
+              <span data-i18n="shortcut">Shortcut</span>
+              <kbd id="shortcut-label">Alt+T</kbd>
+            </button>
+            <p id="status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <nav class="options-links" aria-label="Product links" data-i18n-aria-label="productLinks">
+          <a id="product-link" href="https://akra.kr/quick-translate" target="_blank" rel="noreferrer" data-i18n="website">Website</a>
+          <a id="support-link" href="https://akra.kr/quick-translate/support" target="_blank" rel="noreferrer" data-i18n="support">Support</a>
+          <a id="privacy-link" href="https://akra.kr/quick-translate/privacy" target="_blank" rel="noreferrer" data-i18n="privacy">Privacy</a>
+          <a id="support-akra-link" href="https://ctee.kr/place/akra/donation" target="_blank" rel="noreferrer" data-i18n="supportAkra">Support Akra</a>
+        </nav>
+      </section>
     </main>
 
     <script type="module" src="/src/options.ts"></script>

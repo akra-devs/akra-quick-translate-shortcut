@@ -13,6 +13,7 @@ const FALLBACK_MESSAGES: Record<string, string> = {
   privacy: "Privacy",
   productLinks: "Product links",
   save: "Save",
+  settings: "Settings",
   shortcut: "Shortcut",
   shortcutNotSet: "Not set",
   source: "Source",

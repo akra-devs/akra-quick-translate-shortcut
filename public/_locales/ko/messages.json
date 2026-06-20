@@ -75,6 +75,10 @@
     "message": "저장",
     "description": "Save button"
   },
+  "settings": {
+    "message": "설정",
+    "description": "Options settings section label"
+  },
   "productLinks": {
     "message": "제품 링크",
     "description": "Options footer link group label"

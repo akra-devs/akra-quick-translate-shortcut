@@ -8,7 +8,13 @@
   <body>
     <main class="popup-shell">
       <header class="popup-header">
-        <h1 data-i18n="popupHeading">Akra Translate</h1>
+        <div class="brand-lockup">
+          <img class="brand-icon" src="/icons/icon32.png" alt="" aria-hidden="true" />
+          <div>
+            <p class="eyebrow">Akra Quick Translate</p>
+            <h1 data-i18n="popupHeading">Akra Translate</h1>
+          </div>
+        </div>
         <button id="open-shortcuts" class="shortcut-pill" type="button" title="Open shortcut settings" data-i18n-title="openShortcutSettings">
           <span data-i18n="shortcut">Shortcut</span>
           <kbd id="shortcut-label">Alt+T</kbd>
@@ -16,24 +22,29 @@
       </header>
 
       <form id="popup-form" class="popup-form">
-        <label class="field">
-          <span data-i18n="source">Source</span>
-          <select id="source-language" name="sourceLanguage"></select>
-        </label>
+        <section class="language-card" aria-label="Translation languages" data-i18n-aria-label="translationLanguages">
+          <label class="field">
+            <span data-i18n="source">Source</span>
+            <select id="source-language" name="sourceLanguage"></select>
+          </label>
 
-        <button id="swap-languages" class="icon-button" type="button" aria-label="Swap languages" title="Swap languages" data-i18n-aria-label="swapLanguages" data-i18n-title="swapLanguages">
-          &#8644;
-        </button>
+          <button id="swap-languages" class="icon-button" type="button" aria-label="Swap languages" title="Swap languages" data-i18n-aria-label="swapLanguages" data-i18n-title="swapLanguages">
+            &#8644;
+          </button>
 
-        <label class="field">
-          <span data-i18n="target">Target</span>
-          <select id="target-language" name="targetLanguage"></select>
-        </label>
+          <label class="field">
+            <span data-i18n="target">Target</span>
+            <select id="target-language" name="targetLanguage"></select>
+          </label>
+        </section>
 
-        <label class="toggle-row">
-          <input id="show-overlay" type="checkbox" name="showOverlay" />
-          <span data-i18n="statusOverlay">Status overlay</span>
-        </label>
+        <div class="preference-row">
+          <label class="toggle-row">
+            <input id="show-overlay" type="checkbox" name="showOverlay" />
+            <span data-i18n="statusOverlay">Status overlay</span>
+          </label>
+          <span id="status" role="status" aria-live="polite"></span>
+        </div>
 
         <button id="toggle-translation" class="primary-button" type="submit" data-i18n="translateRestore">Translate / Restore</button>
       </form>
@@ -41,7 +52,6 @@
       <footer class="popup-footer">
         <a href="options.html" target="_blank" rel="noreferrer" data-i18n="options">Options</a>
         <a id="support-akra-link" href="https://ctee.kr/place/akra/donation" target="_blank" rel="noreferrer" data-i18n="supportAkra">Support Akra</a>
-        <span id="status" role="status" aria-live="polite"></span>
       </footer>
     </main>
 

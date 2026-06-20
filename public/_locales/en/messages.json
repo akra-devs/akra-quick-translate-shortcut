@@ -75,6 +75,10 @@
     "message": "Save",
     "description": "Save button"
   },
+  "settings": {
+    "message": "Settings",
+    "description": "Options settings section label"
+  },
   "productLinks": {
     "message": "Product links",
     "description": "Options footer link group label"
