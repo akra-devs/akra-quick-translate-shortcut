@@ -16,12 +16,12 @@ body {
 }
 
 .options-shell {
-  width: min(640px, calc(100vw - 32px));
-  margin: 48px auto;
+  width: min(560px, calc(100vw - 32px));
+  margin: 32px auto;
 }
 
 header {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .eyebrow {
@@ -34,14 +34,14 @@ header {
 h1 {
   margin: 0;
   color: #111827;
-  font-size: 30px;
+  font-size: 24px;
   line-height: 1.2;
 }
 
 .settings-panel {
   display: grid;
-  gap: 20px;
-  padding: 24px;
+  gap: 16px;
+  padding: 18px;
   border: 1px solid #d7dde5;
   border-radius: 8px;
   background: #ffffff;
@@ -50,14 +50,14 @@ h1 {
 
 .language-route {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
   align-items: end;
-  gap: 14px;
+  gap: 10px;
 }
 
 .field {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   color: #344054;
   font-size: 14px;
   font-weight: 600;
@@ -65,8 +65,8 @@ h1 {
 
 select {
   width: 100%;
-  min-height: 44px;
-  padding: 9px 12px;
+  min-height: 38px;
+  padding: 7px 10px;
   border: 1px solid #c9d3df;
   border-radius: 6px;
   color: #101828;
@@ -84,8 +84,8 @@ a:focus-visible,
 
 .route-arrow {
   display: grid;
-  width: 40px;
-  min-height: 44px;
+  width: 34px;
+  min-height: 38px;
   place-items: center;
   color: #175cd3;
   font-size: 20px;
@@ -95,15 +95,15 @@ a:focus-visible,
 .toggle-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #344054;
   font-size: 14px;
   font-weight: 600;
 }
 
 .toggle-row input {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   accent-color: #1570ef;
 }
 
@@ -111,18 +111,19 @@ a:focus-visible,
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 button,
-a {
-  min-height: 40px;
+a,
+.shortcut-button {
+  min-height: 38px;
   border-radius: 6px;
   font: inherit;
   font-weight: 600;
 }
 
-button {
+button:not(.shortcut-button) {
   border: 0;
   padding: 8px 16px;
   color: #ffffff;
@@ -130,15 +131,30 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:not(.shortcut-button):hover {
   background: #1849a9;
 }
 
-a {
+a,
+.shortcut-button {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
   color: #175cd3;
+  border: 0;
+  padding: 0 2px;
+  background: transparent;
   text-decoration: none;
+  cursor: pointer;
+}
+
+kbd {
+  padding: 2px 6px;
+  border-radius: 6px;
+  color: #175cd3;
+  background: #eff6ff;
+  font: inherit;
+  font-weight: 700;
 }
 
 #status {

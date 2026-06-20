@@ -8,11 +8,11 @@
   <body>
     <main class="popup-shell">
       <header class="popup-header">
-        <div>
-          <p class="eyebrow">Akra</p>
-          <h1>Quick Translate</h1>
-        </div>
-        <span id="route-label" class="route-label">en -> ko</span>
+        <h1>Akra Translate</h1>
+        <button id="open-shortcuts" class="shortcut-pill" type="button" title="Open shortcut settings">
+          <span>Shortcut</span>
+          <kbd id="shortcut-label">Alt+T</kbd>
+        </button>
       </header>
 
       <form id="popup-form" class="popup-form">
@@ -40,7 +40,6 @@
 
       <footer class="popup-footer">
         <a href="options.html" target="_blank" rel="noreferrer">Options</a>
-        <a href="chrome://extensions/shortcuts" target="_blank" rel="noreferrer">Shortcuts</a>
         <span id="status" role="status" aria-live="polite"></span>
       </footer>
     </main>

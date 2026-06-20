@@ -8,7 +8,8 @@ const targetLanguageSelect = queryRequired<HTMLSelectElement>("#target-language"
 const showOverlayInput = queryRequired<HTMLInputElement>("#show-overlay");
 const swapLanguagesButton = queryRequired<HTMLButtonElement>("#swap-languages");
 const toggleTranslationButton = queryRequired<HTMLButtonElement>("#toggle-translation");
-const routeLabel = queryRequired<HTMLSpanElement>("#route-label");
+const openShortcutsButton = queryRequired<HTMLButtonElement>("#open-shortcuts");
+const shortcutLabel = queryRequired<HTMLElement>("#shortcut-label");
 const statusText = queryRequired<HTMLSpanElement>("#status");
 
 populateLanguageSelect(sourceLanguageSelect);
@@ -40,10 +41,14 @@ swapLanguagesButton.addEventListener("click", () => {
   void persistSettings();
 });
 
+openShortcutsButton.addEventListener("click", () => {
+  void openKeyboardShortcuts();
+});
+
 async function initializePopup(): Promise<void> {
   const settings = await loadSettings();
   applySettings(settings);
-  updateRouteLabel();
+  await updateShortcutLabel();
 }
 
 function populateLanguageSelect(select: HTMLSelectElement): void {
@@ -72,7 +77,6 @@ function applySettings(settings: ExtensionSettings): void {
 
 async function persistSettings(): Promise<void> {
   await saveSettings(readSettings());
-  updateRouteLabel();
   setStatus("Saved");
 }
 
@@ -108,11 +112,27 @@ async function toggleActiveTab(): Promise<void> {
   }
 }
 
-function updateRouteLabel(): void {
-  routeLabel.textContent = `${sourceLanguageSelect.value} -> ${targetLanguageSelect.value}`;
-}
-
 function setStatus(message: string, tone: "success" | "error" = "success"): void {
   statusText.textContent = message;
   statusText.dataset.tone = tone;
+}
+
+async function updateShortcutLabel(): Promise<void> {
+  const command = await getToggleCommand();
+  shortcutLabel.textContent = command?.shortcut || "Not set";
+}
+
+async function getToggleCommand(): Promise<chrome.commands.Command | undefined> {
+  const commands = await chrome.commands.getAll();
+  return commands.find((command) => command.name === "toggle-translation");
+}
+
+async function openKeyboardShortcuts(): Promise<void> {
+  try {
+    await chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+    window.close();
+  } catch (error) {
+    const message = error instanceof Error && error.message ? error.message : "Unable to open shortcuts";
+    setStatus(message, "error");
+  }
 }
