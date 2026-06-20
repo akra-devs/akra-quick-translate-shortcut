@@ -6,6 +6,7 @@ const CONTENT_LOADED_KEY = "__akraQuickTranslateContentLoaded__";
 type ToggleMessage = {
   type?: string;
   settings?: {
+    sourceLanguage?: string;
     targetLanguage?: string;
     showOverlay?: boolean;
   };

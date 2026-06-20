@@ -7,6 +7,7 @@ import {
 } from "./core";
 
 const SETTINGS: ExtensionSettings = {
+  sourceLanguage: "en",
   targetLanguage: "ko",
   showOverlay: false
 };
@@ -61,26 +62,43 @@ describe("content translation core", () => {
     expect(document.querySelector("p")?.textContent).toBe("Hello world");
   });
 
-  it("uses the Language Detector result when translating with a mocked Translator", async () => {
+  it("uses the selected source language when translating with a mocked Translator", async () => {
     document.body.innerHTML = `<p>Hola mundo, este texto deberia detectarse como espanol.</p>`;
     const translator = createTranslatorApi((text) => Promise.resolve(`KO:${text}`));
-    const detectorInstance: AkraLanguageDetector = {
-      detect: vi.fn().mockResolvedValue([{ detectedLanguage: "es", confidence: 0.92 }]),
-      destroy: vi.fn()
-    };
-    const detector: AkraLanguageDetectorApi = {
-      availability: vi.fn().mockResolvedValue("available"),
-      create: vi.fn().mockResolvedValue(detectorInstance)
-    };
 
-    await togglePageTranslation(SETTINGS, { document, Translator: translator, LanguageDetector: detector });
+    await togglePageTranslation({ ...SETTINGS, sourceLanguage: "es" }, { document, Translator: translator });
 
-    expect(detectorInstance.detect).toHaveBeenCalledTimes(1);
     expect(translator.availability).toHaveBeenCalledWith({
       sourceLanguage: "es",
       targetLanguage: "ko"
     });
     expect(document.querySelector("p")?.textContent).toBe("KO:Hola mundo, este texto deberia detectarse como espanol.");
+  });
+
+  it("does not send Korean target-language text through an English to Korean translator", async () => {
+    document.body.innerHTML = `
+      <main>
+        <p>제한사항</p>
+        <p>chrome://..., edge://..., about:... 같은 브라우저 내부 페이지에서는 동작하지 않습니다.</p>
+      </main>
+    `;
+    const translatorInstance: AkraTranslator = {
+      translate: vi.fn((text: string) => Promise.resolve(`KO:${text}`)),
+      destroy: vi.fn()
+    };
+    const translator: AkraTranslatorApi = {
+      availability: vi.fn().mockResolvedValue("available"),
+      create: vi.fn().mockResolvedValue(translatorInstance)
+    };
+
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator })).resolves.toMatchObject({
+      status: "translated",
+      translatedCount: 0
+    });
+
+    expect(translatorInstance.translate).not.toHaveBeenCalled();
+    expect(document.body.textContent).toContain("제한사항");
+    expect(document.body.textContent).toContain("동작하지 않습니다.");
   });
 
   it("batches multiple text nodes into a single translation call", async () => {
@@ -107,7 +125,7 @@ describe("content translation core", () => {
       create: vi.fn().mockResolvedValue(translatorInstance)
     };
 
-    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator, LanguageDetector: null })).resolves.toMatchObject({
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator })).resolves.toMatchObject({
       status: "translated",
       translatedCount: 3
     });
@@ -139,7 +157,7 @@ describe("content translation core", () => {
       create: vi.fn().mockResolvedValue(translatorInstance)
     };
 
-    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator, LanguageDetector: null })).resolves.toMatchObject({
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator })).resolves.toMatchObject({
       status: "translated",
       translatedCount: 2
     });

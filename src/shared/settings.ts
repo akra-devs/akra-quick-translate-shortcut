@@ -1,4 +1,5 @@
 export interface ExtensionSettings {
+  sourceLanguage: string;
   targetLanguage: string;
   showOverlay: boolean;
 }
@@ -11,11 +12,12 @@ export interface LanguageOption {
 export const STORAGE_KEY = "akraQuickTranslateSettings";
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
+  sourceLanguage: "en",
   targetLanguage: "ko",
   showOverlay: true
 };
 
-export const SUPPORTED_TARGET_LANGUAGES: LanguageOption[] = [
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
   { code: "ar", label: "Arabic" },
   { code: "bg", label: "Bulgarian" },
   { code: "bn", label: "Bengali" },
@@ -57,17 +59,20 @@ export const SUPPORTED_TARGET_LANGUAGES: LanguageOption[] = [
   { code: "zh-Hant", label: "Chinese (Traditional)" }
 ];
 
+export const SUPPORTED_TARGET_LANGUAGES = SUPPORTED_LANGUAGES;
+
 export function normalizeSettings(value: Partial<ExtensionSettings> | undefined): ExtensionSettings {
   return {
+    sourceLanguage: normalizeLanguageCode(value?.sourceLanguage ?? DEFAULT_SETTINGS.sourceLanguage, DEFAULT_SETTINGS.sourceLanguage),
     targetLanguage: normalizeLanguageCode(value?.targetLanguage ?? DEFAULT_SETTINGS.targetLanguage),
     showOverlay: typeof value?.showOverlay === "boolean" ? value.showOverlay : DEFAULT_SETTINGS.showOverlay
   };
 }
 
-export function normalizeLanguageCode(value: string): string {
+export function normalizeLanguageCode(value: string, fallback = DEFAULT_SETTINGS.targetLanguage): string {
   const trimmed = value.trim();
   if (!trimmed) {
-    return DEFAULT_SETTINGS.targetLanguage;
+    return fallback;
   }
 
   const normalized = trimmed.toLowerCase().replace("_", "-");
@@ -75,7 +80,7 @@ export function normalizeLanguageCode(value: string): string {
     return "zh-Hant";
   }
 
-  return normalized.split("-")[0] ?? DEFAULT_SETTINGS.targetLanguage;
+  return normalized.split("-")[0] ?? fallback;
 }
 
 export async function loadSettings(): Promise<ExtensionSettings> {

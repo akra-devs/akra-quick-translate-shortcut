@@ -1,13 +1,12 @@
 export interface ExtensionSettings {
+  sourceLanguage: string;
   targetLanguage: string;
   showOverlay: boolean;
 }
 
 export interface ContentDependencies {
   document?: Document;
-  navigator?: Navigator;
   Translator?: AkraTranslatorApi | null;
-  LanguageDetector?: AkraLanguageDetectorApi | null;
 }
 
 export type TranslationResult =
@@ -63,20 +62,23 @@ const EXCLUDED_TAGS = new Set([
 const OVERLAY_ID = "akra-quick-translate-overlay";
 const OVERLAY_ATTRIBUTE = "data-akra-quick-translate-overlay";
 const DEFAULT_SETTINGS: ExtensionSettings = {
+  sourceLanguage: "en",
   targetLanguage: "ko",
   showOverlay: true
 };
 const MAX_TRANSLATION_CHUNK_CHARS = 3500;
 const MAX_TRANSLATION_CHUNK_RECORDS = 40;
 const SEGMENT_DELIMITER = "\uE000\uE001";
-const SOURCE_LANGUAGE_SAMPLE_CHARS = 1200;
+const MIN_TARGET_SCRIPT_LETTERS = 2;
+const TARGET_SCRIPT_RATIO_THRESHOLD = 0.35;
+const LETTER_PATTERN = /\p{L}/u;
+const HANGUL_PATTERN = /\p{Script=Hangul}/u;
 
 let session: TranslationSession = {
   status: "idle",
   records: []
 };
 const translatorCache = new Map<string, AkraTranslator>();
-let languageDetectorCache: AkraLanguageDetector | undefined;
 
 export function resetTranslationSession(): void {
   session.abortController?.abort();
@@ -217,10 +219,8 @@ async function translateRecords(
   doc: Document
 ): Promise<number> {
   const targetLanguage = normalizeLanguageCode(settings.targetLanguage);
-  const fallbackSourceLanguage = getFallbackSourceLanguage(doc, dependencies.navigator ?? globalThis.navigator);
+  const sourceLanguage = normalizeLanguageCode(settings.sourceLanguage, DEFAULT_SETTINGS.sourceLanguage);
   const translatorPool = new TranslatorPool(resolveTranslatorApi(dependencies), targetLanguage, doc, settings.showOverlay);
-  const detector = await createLanguageDetector(dependencies, doc, settings.showOverlay);
-  const sourceLanguage = await detectPageSourceLanguage(detector, records, fallbackSourceLanguage);
   let translatedCount = 0;
 
   try {
@@ -228,7 +228,7 @@ async function translateRecords(
       return 0;
     }
 
-    const chunks = createTranslationChunks(records);
+    const chunks = createTranslationChunks(records, targetLanguage);
     let processedRecords = 0;
 
     for (const chunk of chunks) {
@@ -306,13 +306,17 @@ function applyTranslatedText(segment: TranslationSegment, translatedCoreText: st
   segment.record.node.nodeValue = segment.record.translatedText;
 }
 
-function createTranslationChunks(records: TranslationRecord[]): TranslationSegment[][] {
+function createTranslationChunks(records: TranslationRecord[], targetLanguage: string): TranslationSegment[][] {
   const chunks: TranslationSegment[][] = [];
   let currentChunk: TranslationSegment[] = [];
   let currentCharCount = 0;
 
   for (const record of records) {
     const split = splitWhitespace(record.originalText);
+    if (isLikelyTargetLanguageText(split.core, targetLanguage)) {
+      continue;
+    }
+
     const segment: TranslationSegment = { record, split };
     const nextCharCount = currentCharCount + split.core.length + (currentChunk.length > 0 ? SEGMENT_DELIMITER.length : 0);
     const wouldExceedSize = currentChunk.length > 0 && nextCharCount > MAX_TRANSLATION_CHUNK_CHARS;
@@ -394,93 +398,41 @@ class TranslatorPool {
   }
 }
 
-async function createLanguageDetector(
-  dependencies: ContentDependencies,
-  doc: Document,
-  showStatus: boolean
-): Promise<AkraLanguageDetector | undefined> {
-  const detectorApi = resolveLanguageDetectorApi(dependencies);
-  if (!detectorApi) {
-    return undefined;
-  }
-
-  if (languageDetectorCache) {
-    return languageDetectorCache;
-  }
-
-  try {
-    if (detectorApi.availability) {
-      const availability = await detectorApi.availability();
-      if (availability === "unavailable") {
-        return undefined;
-      }
-    }
-
-    languageDetectorCache = await detectorApi.create({
-      monitor: (monitor) => {
-        monitor.addEventListener("downloadprogress", (event) => {
-          const progress = event as ProgressEvent;
-          const percent = Math.round(progress.loaded * 100);
-          showOverlay(doc, `Downloading language detector ${percent}%`, "progress", showStatus, 0);
-        });
-      }
-    });
-    return languageDetectorCache;
-  } catch {
-    return undefined;
-  }
-}
-
 function destroyCachedApis(): void {
   for (const translator of translatorCache.values()) {
     translator.destroy?.();
   }
   translatorCache.clear();
-  languageDetectorCache?.destroy?.();
-  languageDetectorCache = undefined;
 }
 
-async function detectPageSourceLanguage(
-  detector: AkraLanguageDetector | undefined,
-  records: TranslationRecord[],
-  fallbackLanguage: string
-): Promise<string> {
-  const sampleText = createSourceLanguageSample(records);
-  if (!detector || sampleText.length < 20) {
-    return fallbackLanguage;
+function isLikelyTargetLanguageText(text: string, targetLanguage: string): boolean {
+  switch (normalizeLanguageCode(targetLanguage)) {
+    case "ko":
+      return hasDominantScript(text, HANGUL_PATTERN);
+    default:
+      return false;
   }
-
-  try {
-    const [bestResult] = await detector.detect(sampleText);
-    if (bestResult && bestResult.confidence >= 0.55) {
-      return normalizeLanguageCode(bestResult.detectedLanguage);
-    }
-  } catch {
-    return fallbackLanguage;
-  }
-
-  return fallbackLanguage;
 }
 
-function createSourceLanguageSample(records: TranslationRecord[]): string {
-  const sampleParts: string[] = [];
-  let sampleCharCount = 0;
+function hasDominantScript(text: string, scriptPattern: RegExp): boolean {
+  let letterCount = 0;
+  let scriptLetterCount = 0;
 
-  for (const record of records) {
-    const text = record.originalText.trim();
-    if (text.length === 0) {
+  for (const char of text) {
+    if (!LETTER_PATTERN.test(char)) {
       continue;
     }
 
-    sampleParts.push(text);
-    sampleCharCount += text.length + 1;
-
-    if (sampleCharCount >= SOURCE_LANGUAGE_SAMPLE_CHARS) {
-      break;
+    letterCount += 1;
+    if (scriptPattern.test(char)) {
+      scriptLetterCount += 1;
     }
   }
 
-  return sampleParts.join(" ").slice(0, SOURCE_LANGUAGE_SAMPLE_CHARS);
+  return (
+    scriptLetterCount >= MIN_TARGET_SCRIPT_LETTERS &&
+    scriptLetterCount / Math.max(letterCount, 1) >= TARGET_SCRIPT_RATIO_THRESHOLD
+  );
 }
 
 function restoreOriginals(): number {
@@ -555,26 +507,23 @@ function splitWhitespace(text: string): WhitespaceSplit {
 
 function normalizeSettings(settings: Partial<ExtensionSettings>): ExtensionSettings {
   return {
+    sourceLanguage: normalizeLanguageCode(settings.sourceLanguage ?? DEFAULT_SETTINGS.sourceLanguage, DEFAULT_SETTINGS.sourceLanguage),
     targetLanguage: normalizeLanguageCode(settings.targetLanguage ?? DEFAULT_SETTINGS.targetLanguage),
     showOverlay: typeof settings.showOverlay === "boolean" ? settings.showOverlay : DEFAULT_SETTINGS.showOverlay
   };
 }
 
-function normalizeLanguageCode(value: string): string {
+function normalizeLanguageCode(value: string, fallback = DEFAULT_SETTINGS.targetLanguage): string {
   const normalized = value.trim().toLowerCase().replace("_", "-");
   if (!normalized) {
-    return DEFAULT_SETTINGS.targetLanguage;
+    return fallback;
   }
 
   if (normalized === "zh-hant" || normalized.startsWith("zh-hant-")) {
     return "zh-Hant";
   }
 
-  return normalized.split("-")[0] ?? DEFAULT_SETTINGS.targetLanguage;
-}
-
-function getFallbackSourceLanguage(doc: Document, nav: Navigator | undefined): string {
-  return normalizeLanguageCode(doc.documentElement.lang || nav?.language || "en");
+  return normalized.split("-")[0] ?? fallback;
 }
 
 function resolveDocument(dependencies: ContentDependencies): Document {
@@ -592,14 +541,6 @@ function resolveTranslatorApi(dependencies: ContentDependencies): AkraTranslator
   }
 
   return globalThis.Translator;
-}
-
-function resolveLanguageDetectorApi(dependencies: ContentDependencies): AkraLanguageDetectorApi | undefined {
-  if (Object.hasOwn(dependencies, "LanguageDetector")) {
-    return dependencies.LanguageDetector ?? undefined;
-  }
-
-  return globalThis.LanguageDetector;
 }
 
 function showOverlay(
