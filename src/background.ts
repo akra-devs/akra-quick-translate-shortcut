@@ -1,3 +1,4 @@
+import { t } from "./shared/i18n";
 import { MESSAGE_TOGGLE_ACTIVE_TAB, MESSAGE_TOGGLE_TRANSLATION, type ToggleActiveTabMessage, type ToggleTranslationMessage } from "./shared/messages";
 import { loadSettings } from "./shared/settings";
 
@@ -40,7 +41,7 @@ export function registerBackgroundListeners(): void {
   chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
       id: CONTEXT_MENU_ID,
-      title: "Toggle page translation",
+      title: t("contextMenuToggle"),
       contexts: ["page", "selection"]
     });
   });

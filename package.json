@@ -6,6 +6,8 @@
   "description": "Chrome MV3 extension that toggles page translation with Chrome's built-in Translator API.",
   "scripts": {
     "build": "vite build",
+    "generate-assets": "node scripts/generate-assets.mjs",
+    "package": "npm run build && node scripts/package.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
@@ -13,6 +15,7 @@
     "@types/chrome": "^0.1.43",
     "@types/node": "^24.0.0",
     "jsdom": "^29.1.1",
+    "sharp": "^0.35.2",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vitest": "^4.1.9"

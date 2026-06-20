@@ -48,6 +48,15 @@ h1 {
   box-shadow: 0 18px 48px rgba(24, 34, 48, 0.10);
 }
 
+.options-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  color: #667085;
+  font-size: 13px;
+}
+
 .language-route {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);

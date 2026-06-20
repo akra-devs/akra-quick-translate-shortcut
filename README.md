@@ -77,11 +77,19 @@ Chrome 툴바의 확장 아이콘을 클릭하면 바로 설정할 수 있습니
 npm run test
 npm run typecheck
 npm run build
+npm run package
 ```
 
 - `npm run test`: Vitest 기반 단위 테스트 실행
 - `npm run typecheck`: TypeScript 타입 검사
 - `npm run build`: Chrome 확장 배포용 파일 생성
+- `npm run package`: 빌드 후 `release/akra-quick-translate-0.1.0.zip` 생성 및 필수 파일 검증
+
+스토어 이미지는 다음 명령으로 다시 생성할 수 있습니다.
+
+```bash
+npm run generate-assets
+```
 
 ## 테스트 범위
 
@@ -108,6 +116,10 @@ npm run build
 
 ```text
 public/manifest.json        Chrome MV3 manifest
+public/_locales/            Chrome i18n 메시지
+public/icons/               확장 아이콘
+scripts/package.mjs         Chrome Web Store ZIP 패키징
+store-assets/               Chrome Web Store 이미지
 src/background.ts           확장 이벤트와 토글 진입점
 src/content.ts              content script 메시지 리스너
 src/content/core.ts         텍스트 수집, 번역, 복구 핵심 로직

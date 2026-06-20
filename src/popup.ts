@@ -1,6 +1,11 @@
 import "./popup.css";
+import { applyDocumentLocale, applyLocalizedText, t } from "./shared/i18n";
+import { DONATION_URL } from "./shared/links";
 import { MESSAGE_TOGGLE_ACTIVE_TAB } from "./shared/messages";
 import { loadSettings, saveSettings, SUPPORTED_LANGUAGES, type ExtensionSettings } from "./shared/settings";
+
+applyDocumentLocale();
+applyLocalizedText();
 
 const form = queryRequired<HTMLFormElement>("#popup-form");
 const sourceLanguageSelect = queryRequired<HTMLSelectElement>("#source-language");
@@ -9,9 +14,11 @@ const showOverlayInput = queryRequired<HTMLInputElement>("#show-overlay");
 const swapLanguagesButton = queryRequired<HTMLButtonElement>("#swap-languages");
 const toggleTranslationButton = queryRequired<HTMLButtonElement>("#toggle-translation");
 const openShortcutsButton = queryRequired<HTMLButtonElement>("#open-shortcuts");
+const supportAkraLink = queryRequired<HTMLAnchorElement>("#support-akra-link");
 const shortcutLabel = queryRequired<HTMLElement>("#shortcut-label");
 const statusText = queryRequired<HTMLSpanElement>("#status");
 
+supportAkraLink.href = DONATION_URL;
 populateLanguageSelect(sourceLanguageSelect);
 populateLanguageSelect(targetLanguageSelect);
 
@@ -43,6 +50,11 @@ swapLanguagesButton.addEventListener("click", () => {
 
 openShortcutsButton.addEventListener("click", () => {
   void openKeyboardShortcuts();
+});
+
+supportAkraLink.addEventListener("click", (event) => {
+  event.preventDefault();
+  void openDonationPage();
 });
 
 async function initializePopup(): Promise<void> {
@@ -77,7 +89,7 @@ function applySettings(settings: ExtensionSettings): void {
 
 async function persistSettings(): Promise<void> {
   await saveSettings(readSettings());
-  setStatus("Saved");
+  setStatus(t("statusSaved"));
 }
 
 function readSettings(): ExtensionSettings {
@@ -90,7 +102,7 @@ function readSettings(): ExtensionSettings {
 
 async function toggleActiveTab(): Promise<void> {
   toggleTranslationButton.disabled = true;
-  setStatus("Running");
+  setStatus(t("statusRunning"));
 
   try {
     const response = (await chrome.runtime.sendMessage({ type: MESSAGE_TOGGLE_ACTIVE_TAB })) as
@@ -98,14 +110,14 @@ async function toggleActiveTab(): Promise<void> {
       | undefined;
 
     if (response?.ok === false) {
-      setStatus(response.message ?? "Failed", "error");
+      setStatus(response.message ?? t("statusFailed"), "error");
       return;
     }
 
-    setStatus("Applied");
+    setStatus(t("statusApplied"));
     window.setTimeout(() => window.close(), 250);
   } catch (error) {
-    const message = error instanceof Error && error.message ? error.message : "Failed";
+    const message = error instanceof Error && error.message ? error.message : t("statusFailed");
     setStatus(message, "error");
   } finally {
     toggleTranslationButton.disabled = false;
@@ -119,7 +131,7 @@ function setStatus(message: string, tone: "success" | "error" = "success"): void
 
 async function updateShortcutLabel(): Promise<void> {
   const command = await getToggleCommand();
-  shortcutLabel.textContent = command?.shortcut || "Not set";
+  shortcutLabel.textContent = command?.shortcut || t("shortcutNotSet");
 }
 
 async function getToggleCommand(): Promise<chrome.commands.Command | undefined> {
@@ -132,7 +144,17 @@ async function openKeyboardShortcuts(): Promise<void> {
     await chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
     window.close();
   } catch (error) {
-    const message = error instanceof Error && error.message ? error.message : "Unable to open shortcuts";
+    const message = error instanceof Error && error.message ? error.message : t("errorOpenShortcuts");
+    setStatus(message, "error");
+  }
+}
+
+async function openDonationPage(): Promise<void> {
+  try {
+    await chrome.tabs.create({ url: DONATION_URL });
+    window.close();
+  } catch (error) {
+    const message = error instanceof Error && error.message ? error.message : t("errorOpenDonation");
     setStatus(message, "error");
   }
 }
