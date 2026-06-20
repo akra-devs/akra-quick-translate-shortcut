@@ -37,6 +37,11 @@ interface WhitespaceSplit {
   trailing: string;
 }
 
+interface TranslationSegment {
+  record: TranslationRecord;
+  split: WhitespaceSplit;
+}
+
 const EXCLUDED_TAGS = new Set([
   "canvas",
   "code",
@@ -61,14 +66,21 @@ const DEFAULT_SETTINGS: ExtensionSettings = {
   targetLanguage: "ko",
   showOverlay: true
 };
+const MAX_TRANSLATION_CHUNK_CHARS = 3500;
+const MAX_TRANSLATION_CHUNK_RECORDS = 40;
+const SEGMENT_DELIMITER = "\uE000\uE001";
+const SOURCE_LANGUAGE_SAMPLE_CHARS = 1200;
 
 let session: TranslationSession = {
   status: "idle",
   records: []
 };
+const translatorCache = new Map<string, AkraTranslator>();
+let languageDetectorCache: AkraLanguageDetector | undefined;
 
 export function resetTranslationSession(): void {
   session.abortController?.abort();
+  destroyCachedApis();
   session = {
     status: "idle",
     records: []
@@ -208,36 +220,122 @@ async function translateRecords(
   const fallbackSourceLanguage = getFallbackSourceLanguage(doc, dependencies.navigator ?? globalThis.navigator);
   const translatorPool = new TranslatorPool(resolveTranslatorApi(dependencies), targetLanguage, doc, settings.showOverlay);
   const detector = await createLanguageDetector(dependencies, doc, settings.showOverlay);
+  const sourceLanguage = await detectPageSourceLanguage(detector, records, fallbackSourceLanguage);
   let translatedCount = 0;
 
   try {
-    for (const [index, record] of records.entries()) {
-      assertNotAborted(signal);
-      const split = splitWhitespace(record.originalText);
-      const sourceLanguage = await detectSourceLanguage(detector, split.core, fallbackSourceLanguage, targetLanguage);
-
-      if (sourceLanguage === targetLanguage) {
-        continue;
-      }
-
-      const translatedText = await translatorPool.translate(split.core, sourceLanguage, signal);
-      assertNotAborted(signal);
-      record.translatedText = `${split.leading}${translatedText}${split.trailing}`;
-      record.node.nodeValue = record.translatedText;
-      translatedCount += 1;
-      showOverlay(doc, `Translating ${index + 1}/${records.length}`, "progress", settings.showOverlay, 0);
+    if (sourceLanguage === targetLanguage) {
+      return 0;
     }
+
+    const chunks = createTranslationChunks(records);
+    let processedRecords = 0;
+
+    for (const chunk of chunks) {
+      assertNotAborted(signal);
+      translatedCount += await translateChunk(chunk, translatorPool, sourceLanguage, signal);
+      processedRecords += chunk.length;
+      showOverlay(doc, `Translating ${processedRecords}/${records.length}`, "progress", settings.showOverlay, 0);
+    }
+
+    return translatedCount;
   } finally {
-    detector?.destroy?.();
-    translatorPool.destroy();
+    translatorPool.release();
+  }
+}
+
+async function translateChunk(
+  chunk: TranslationSegment[],
+  translatorPool: TranslatorPool,
+  sourceLanguage: string,
+  signal: AbortSignal
+): Promise<number> {
+  if (chunk.length === 1) {
+    const [segment] = chunk;
+    return translateSegment(segment, translatorPool, sourceLanguage, signal);
+  }
+
+  const joinedText = chunk.map((segment) => segment.split.core).join(SEGMENT_DELIMITER);
+  const translatedJoinedText = await translatorPool.translate(joinedText, sourceLanguage, signal);
+  assertNotAborted(signal);
+
+  const translatedParts = translatedJoinedText.split(SEGMENT_DELIMITER);
+  if (translatedParts.length !== chunk.length) {
+    return translateChunkIndividually(chunk, translatorPool, sourceLanguage, signal);
+  }
+
+  let translatedCount = 0;
+  for (const [index, segment] of chunk.entries()) {
+    applyTranslatedText(segment, translatedParts[index] ?? "");
+    translatedCount += 1;
   }
 
   return translatedCount;
 }
 
-class TranslatorPool {
-  private readonly translators = new Map<string, AkraTranslator>();
+async function translateChunkIndividually(
+  chunk: TranslationSegment[],
+  translatorPool: TranslatorPool,
+  sourceLanguage: string,
+  signal: AbortSignal
+): Promise<number> {
+  let translatedCount = 0;
 
+  for (const segment of chunk) {
+    assertNotAborted(signal);
+    translatedCount += await translateSegment(segment, translatorPool, sourceLanguage, signal);
+  }
+
+  return translatedCount;
+}
+
+async function translateSegment(
+  segment: TranslationSegment,
+  translatorPool: TranslatorPool,
+  sourceLanguage: string,
+  signal: AbortSignal
+): Promise<number> {
+  const translatedText = await translatorPool.translate(segment.split.core, sourceLanguage, signal);
+  assertNotAborted(signal);
+  applyTranslatedText(segment, translatedText);
+  return 1;
+}
+
+function applyTranslatedText(segment: TranslationSegment, translatedCoreText: string): void {
+  segment.record.translatedText = `${segment.split.leading}${translatedCoreText}${segment.split.trailing}`;
+  segment.record.node.nodeValue = segment.record.translatedText;
+}
+
+function createTranslationChunks(records: TranslationRecord[]): TranslationSegment[][] {
+  const chunks: TranslationSegment[][] = [];
+  let currentChunk: TranslationSegment[] = [];
+  let currentCharCount = 0;
+
+  for (const record of records) {
+    const split = splitWhitespace(record.originalText);
+    const segment: TranslationSegment = { record, split };
+    const nextCharCount = currentCharCount + split.core.length + (currentChunk.length > 0 ? SEGMENT_DELIMITER.length : 0);
+    const wouldExceedSize = currentChunk.length > 0 && nextCharCount > MAX_TRANSLATION_CHUNK_CHARS;
+    const wouldExceedRecords = currentChunk.length >= MAX_TRANSLATION_CHUNK_RECORDS;
+
+    if (wouldExceedSize || wouldExceedRecords) {
+      chunks.push(currentChunk);
+      currentChunk = [];
+      currentCharCount = 0;
+    }
+
+    currentChunk.push(segment);
+    currentCharCount += split.core.length + (currentChunk.length > 1 ? SEGMENT_DELIMITER.length : 0);
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk);
+  }
+
+  return chunks;
+}
+
+class TranslatorPool {
   constructor(
     private readonly translatorApi: AkraTranslatorApi | undefined,
     private readonly targetLanguage: string,
@@ -253,11 +351,8 @@ class TranslatorPool {
     return translator.translate(text);
   }
 
-  destroy(): void {
-    for (const translator of this.translators.values()) {
-      translator.destroy?.();
-    }
-    this.translators.clear();
+  release(): void {
+    // Translators are cached per content script so repeated toggles do not pay create() cost again.
   }
 
   private async getTranslator(sourceLanguage: string): Promise<AkraTranslator> {
@@ -266,7 +361,7 @@ class TranslatorPool {
     }
 
     const key = `${sourceLanguage}:${this.targetLanguage}`;
-    const existing = this.translators.get(key);
+    const existing = translatorCache.get(key);
     if (existing) {
       return existing;
     }
@@ -294,7 +389,7 @@ class TranslatorPool {
       }
     });
 
-    this.translators.set(key, translator);
+    translatorCache.set(key, translator);
     return translator;
   }
 }
@@ -309,6 +404,10 @@ async function createLanguageDetector(
     return undefined;
   }
 
+  if (languageDetectorCache) {
+    return languageDetectorCache;
+  }
+
   try {
     if (detectorApi.availability) {
       const availability = await detectorApi.availability();
@@ -317,7 +416,7 @@ async function createLanguageDetector(
       }
     }
 
-    return await detectorApi.create({
+    languageDetectorCache = await detectorApi.create({
       monitor: (monitor) => {
         monitor.addEventListener("downloadprogress", (event) => {
           const progress = event as ProgressEvent;
@@ -326,23 +425,33 @@ async function createLanguageDetector(
         });
       }
     });
+    return languageDetectorCache;
   } catch {
     return undefined;
   }
 }
 
-async function detectSourceLanguage(
+function destroyCachedApis(): void {
+  for (const translator of translatorCache.values()) {
+    translator.destroy?.();
+  }
+  translatorCache.clear();
+  languageDetectorCache?.destroy?.();
+  languageDetectorCache = undefined;
+}
+
+async function detectPageSourceLanguage(
   detector: AkraLanguageDetector | undefined,
-  text: string,
-  fallbackLanguage: string,
-  targetLanguage: string
+  records: TranslationRecord[],
+  fallbackLanguage: string
 ): Promise<string> {
-  if (!detector || text.length < 20) {
+  const sampleText = createSourceLanguageSample(records);
+  if (!detector || sampleText.length < 20) {
     return fallbackLanguage;
   }
 
   try {
-    const [bestResult] = await detector.detect(text.slice(0, 1000));
+    const [bestResult] = await detector.detect(sampleText);
     if (bestResult && bestResult.confidence >= 0.55) {
       return normalizeLanguageCode(bestResult.detectedLanguage);
     }
@@ -350,7 +459,28 @@ async function detectSourceLanguage(
     return fallbackLanguage;
   }
 
-  return fallbackLanguage === targetLanguage ? targetLanguage : fallbackLanguage;
+  return fallbackLanguage;
+}
+
+function createSourceLanguageSample(records: TranslationRecord[]): string {
+  const sampleParts: string[] = [];
+  let sampleCharCount = 0;
+
+  for (const record of records) {
+    const text = record.originalText.trim();
+    if (text.length === 0) {
+      continue;
+    }
+
+    sampleParts.push(text);
+    sampleCharCount += text.length + 1;
+
+    if (sampleCharCount >= SOURCE_LANGUAGE_SAMPLE_CHARS) {
+      break;
+    }
+  }
+
+  return sampleParts.join(" ").slice(0, SOURCE_LANGUAGE_SAMPLE_CHARS);
 }
 
 function restoreOriginals(): number {

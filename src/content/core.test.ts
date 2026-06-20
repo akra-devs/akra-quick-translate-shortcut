@@ -10,6 +10,7 @@ const SETTINGS: ExtensionSettings = {
   targetLanguage: "ko",
   showOverlay: false
 };
+const SEGMENT_DELIMITER = "\uE000\uE001";
 
 describe("content translation core", () => {
   beforeEach(() => {
@@ -63,21 +64,88 @@ describe("content translation core", () => {
   it("uses the Language Detector result when translating with a mocked Translator", async () => {
     document.body.innerHTML = `<p>Hola mundo, este texto deberia detectarse como espanol.</p>`;
     const translator = createTranslatorApi((text) => Promise.resolve(`KO:${text}`));
+    const detectorInstance: AkraLanguageDetector = {
+      detect: vi.fn().mockResolvedValue([{ detectedLanguage: "es", confidence: 0.92 }]),
+      destroy: vi.fn()
+    };
     const detector: AkraLanguageDetectorApi = {
       availability: vi.fn().mockResolvedValue("available"),
-      create: vi.fn().mockResolvedValue({
-        detect: vi.fn().mockResolvedValue([{ detectedLanguage: "es", confidence: 0.92 }]),
-        destroy: vi.fn()
-      })
+      create: vi.fn().mockResolvedValue(detectorInstance)
     };
 
     await togglePageTranslation(SETTINGS, { document, Translator: translator, LanguageDetector: detector });
 
+    expect(detectorInstance.detect).toHaveBeenCalledTimes(1);
     expect(translator.availability).toHaveBeenCalledWith({
       sourceLanguage: "es",
       targetLanguage: "ko"
     });
     expect(document.querySelector("p")?.textContent).toBe("KO:Hola mundo, este texto deberia detectarse como espanol.");
+  });
+
+  it("batches multiple text nodes into a single translation call", async () => {
+    document.body.innerHTML = `
+      <main>
+        <p>Hello world</p>
+        <p>Good morning</p>
+        <p>See you soon</p>
+      </main>
+    `;
+    const translatorInstance: AkraTranslator = {
+      translate: vi.fn((text: string) =>
+        Promise.resolve(
+          text
+            .split(SEGMENT_DELIMITER)
+            .map((part) => `KO:${part}`)
+            .join(SEGMENT_DELIMITER)
+        )
+      ),
+      destroy: vi.fn()
+    };
+    const translator: AkraTranslatorApi = {
+      availability: vi.fn().mockResolvedValue("available"),
+      create: vi.fn().mockResolvedValue(translatorInstance)
+    };
+
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator, LanguageDetector: null })).resolves.toMatchObject({
+      status: "translated",
+      translatedCount: 3
+    });
+
+    expect(translatorInstance.translate).toHaveBeenCalledTimes(1);
+    expect([...document.querySelectorAll("p")].map((node) => node.textContent)).toEqual([
+      "KO:Hello world",
+      "KO:Good morning",
+      "KO:See you soon"
+    ]);
+  });
+
+  it("falls back to per-node translation if a batch delimiter is not preserved", async () => {
+    document.body.innerHTML = `
+      <main>
+        <p>Hello world</p>
+        <p>Good morning</p>
+      </main>
+    `;
+    const translatorInstance: AkraTranslator = {
+      translate: vi
+        .fn()
+        .mockResolvedValueOnce("Delimiter was removed")
+        .mockImplementation((text: string) => Promise.resolve(`KO:${text}`)),
+      destroy: vi.fn()
+    };
+    const translator: AkraTranslatorApi = {
+      availability: vi.fn().mockResolvedValue("available"),
+      create: vi.fn().mockResolvedValue(translatorInstance)
+    };
+
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator, LanguageDetector: null })).resolves.toMatchObject({
+      status: "translated",
+      translatedCount: 2
+    });
+
+    expect(translatorInstance.translate).toHaveBeenCalledTimes(3);
+    expect([...document.querySelectorAll("p")].map((node) => node.textContent)).toEqual(["KO:Hello world", "KO:Good morning"]);
   });
 
   it("reports an unsupported Translator API without mutating the page", async () => {
