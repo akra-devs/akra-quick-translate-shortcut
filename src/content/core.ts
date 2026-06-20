@@ -18,10 +18,11 @@ interface TranslationRecord {
 }
 
 interface TranslationSession {
-  status: "idle" | "translating" | "translated";
+  status: "idle" | "translating" | "translated" | "restored";
   records: TranslationRecord[];
   abortController?: AbortController;
   runId?: symbol;
+  sourceLanguage?: string;
   targetLanguage?: string;
 }
 
@@ -140,9 +141,17 @@ export async function togglePageTranslation(
   }
 
   if (session.status === "translated") {
-    const restoredCount = restoreOriginals();
+    const restoredCount = restoreOriginals({ preserveCache: true });
     showOverlay(doc, "Original text restored", "success", settings.showOverlay);
     return { status: "restored", restoredCount };
+  }
+
+  if (session.status === "restored") {
+    const translatedCount = reapplyCachedTranslations(settings);
+    if (translatedCount !== undefined) {
+      showOverlay(doc, `Translated ${translatedCount} text nodes`, "success", settings.showOverlay);
+      return { status: "translated", translatedCount };
+    }
   }
 
   const translatorApi = resolveTranslatorApi(dependencies);
@@ -171,6 +180,7 @@ export async function togglePageTranslation(
     records,
     abortController,
     runId,
+    sourceLanguage: settings.sourceLanguage,
     targetLanguage: settings.targetLanguage
   };
 
@@ -430,20 +440,92 @@ function hasDominantScript(text: string, scriptPattern: RegExp): boolean {
   );
 }
 
-function restoreOriginals(): number {
+function restoreOriginals(options: { preserveCache?: boolean } = {}): number {
   const restoredCount = session.records.length;
+  const records = session.records;
+  const sourceLanguage = session.sourceLanguage;
+  const targetLanguage = session.targetLanguage;
+
   for (const record of session.records) {
     if (record.node.isConnected) {
       record.node.nodeValue = record.originalText;
     }
   }
 
+  if (options.preserveCache) {
+    session = {
+      status: "restored",
+      records,
+      sourceLanguage,
+      targetLanguage
+    };
+  } else {
+    clearTranslationSession();
+  }
+
+  return restoredCount;
+}
+
+function reapplyCachedTranslations(settings: ExtensionSettings): number | undefined {
+  if (!isCachedSessionCompatible(settings)) {
+    clearTranslationSession();
+    return undefined;
+  }
+
+  const records = session.records;
+  let connectedCount = 0;
+  let translatedCount = 0;
+
+  for (const record of records) {
+    if (!record.node.isConnected) {
+      continue;
+    }
+
+    connectedCount += 1;
+    if (record.translatedText === undefined) {
+      continue;
+    }
+
+    const currentText = record.node.nodeValue ?? "";
+    if (currentText !== record.originalText && currentText !== record.translatedText) {
+      clearTranslationSession();
+      return undefined;
+    }
+  }
+
+  if (connectedCount === 0) {
+    clearTranslationSession();
+    return undefined;
+  }
+
+  for (const record of records) {
+    if (!record.node.isConnected || record.translatedText === undefined) {
+      continue;
+    }
+
+    record.node.nodeValue = record.translatedText;
+    translatedCount += 1;
+  }
+
+  session = {
+    status: "translated",
+    records,
+    sourceLanguage: session.sourceLanguage,
+    targetLanguage: session.targetLanguage
+  };
+
+  return translatedCount;
+}
+
+function isCachedSessionCompatible(settings: ExtensionSettings): boolean {
+  return session.sourceLanguage === settings.sourceLanguage && session.targetLanguage === settings.targetLanguage;
+}
+
+function clearTranslationSession(): void {
   session = {
     status: "idle",
     records: []
   };
-
-  return restoredCount;
 }
 
 function hasBlockedAncestor(element: Element): boolean {

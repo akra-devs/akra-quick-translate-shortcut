@@ -62,6 +62,48 @@ describe("content translation core", () => {
     expect(document.querySelector("p")?.textContent).toBe("Hello world");
   });
 
+  it("reapplies cached translations after restore without translating again", async () => {
+    document.body.innerHTML = `
+      <main>
+        <p>Hello world</p>
+        <p>Good morning</p>
+      </main>
+    `;
+    const translatorInstance: AkraTranslator = {
+      translate: vi.fn((text: string) =>
+        Promise.resolve(
+          text
+            .split(SEGMENT_DELIMITER)
+            .map((part) => `KO:${part}`)
+            .join(SEGMENT_DELIMITER)
+        )
+      ),
+      destroy: vi.fn()
+    };
+    const translator: AkraTranslatorApi = {
+      availability: vi.fn().mockResolvedValue("available"),
+      create: vi.fn().mockResolvedValue(translatorInstance)
+    };
+
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator })).resolves.toMatchObject({
+      status: "translated",
+      translatedCount: 2
+    });
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator })).resolves.toMatchObject({
+      status: "restored",
+      restoredCount: 2
+    });
+    await expect(togglePageTranslation(SETTINGS, { document, Translator: translator })).resolves.toMatchObject({
+      status: "translated",
+      translatedCount: 2
+    });
+
+    expect(translator.availability).toHaveBeenCalledTimes(1);
+    expect(translator.create).toHaveBeenCalledTimes(1);
+    expect(translatorInstance.translate).toHaveBeenCalledTimes(1);
+    expect([...document.querySelectorAll("p")].map((node) => node.textContent)).toEqual(["KO:Hello world", "KO:Good morning"]);
+  });
+
   it("uses the selected source language when translating with a mocked Translator", async () => {
     document.body.innerHTML = `<p>Hola mundo, este texto deberia detectarse como espanol.</p>`;
     const translator = createTranslatorApi((text) => Promise.resolve(`KO:${text}`));
