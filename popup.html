@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akra Quick Translate</title>
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="popup-header">
+        <div>
+          <p class="eyebrow">Akra</p>
+          <h1>Quick Translate</h1>
+        </div>
+        <span id="route-label" class="route-label">en -> ko</span>
+      </header>
+
+      <form id="popup-form" class="popup-form">
+        <label class="field">
+          <span>Source</span>
+          <select id="source-language" name="sourceLanguage"></select>
+        </label>
+
+        <button id="swap-languages" class="icon-button" type="button" aria-label="Swap languages" title="Swap languages">
+          &#8644;
+        </button>
+
+        <label class="field">
+          <span>Target</span>
+          <select id="target-language" name="targetLanguage"></select>
+        </label>
+
+        <label class="toggle-row">
+          <input id="show-overlay" type="checkbox" name="showOverlay" />
+          <span>Status overlay</span>
+        </label>
+
+        <button id="toggle-translation" class="primary-button" type="submit">Translate / Restore</button>
+      </form>
+
+      <footer class="popup-footer">
+        <a href="options.html" target="_blank" rel="noreferrer">Options</a>
+        <a href="chrome://extensions/shortcuts" target="_blank" rel="noreferrer">Shortcuts</a>
+        <span id="status" role="status" aria-live="polite"></span>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/popup.ts"></script>
+  </body>
+</html>

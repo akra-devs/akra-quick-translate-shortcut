@@ -10,7 +10,8 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Toggle Akra Quick Translate"
+    "default_title": "Akra Quick Translate",
+    "default_popup": "popup.html"
   },
   "commands": {
     "toggle-translation": {

@@ -1,4 +1,4 @@
-import { MESSAGE_TOGGLE_TRANSLATION, type ToggleTranslationMessage } from "./shared/messages";
+import { MESSAGE_TOGGLE_ACTIVE_TAB, MESSAGE_TOGGLE_TRANSLATION, type ToggleActiveTabMessage, type ToggleTranslationMessage } from "./shared/messages";
 import { loadSettings } from "./shared/settings";
 
 const CONTEXT_MENU_ID = "akra-quick-translate-toggle";
@@ -47,6 +47,22 @@ export function registerBackgroundListeners(): void {
 
   chrome.action.onClicked.addListener((tab) => {
     void toggleTranslation(tab);
+  });
+
+  chrome.runtime.onMessage.addListener((message: ToggleActiveTabMessage, _sender, sendResponse) => {
+    if (message?.type !== MESSAGE_TOGGLE_ACTIVE_TAB) {
+      return false;
+    }
+
+    getActiveTab()
+      .then(toggleTranslation)
+      .then(() => sendResponse({ ok: true }))
+      .catch((error: unknown) => {
+        const message = error instanceof Error && error.message ? error.message : "Unable to toggle translation";
+        sendResponse({ ok: false, message });
+      });
+
+    return true;
   });
 
   chrome.commands.onCommand.addListener((command, tab) => {
