@@ -3,6 +3,7 @@ import { MESSAGE_TOGGLE_ACTIVE_TAB, MESSAGE_TOGGLE_TRANSLATION, type ToggleActiv
 import { loadSettings } from "./shared/settings";
 
 const CONTEXT_MENU_ID = "akra-quick-translate-toggle";
+const UNSUPPORTED_PAGE_MESSAGE = "This page cannot be translated";
 
 export function isSupportedPageUrl(url: string | undefined): boolean {
   if (!url) {
@@ -20,7 +21,7 @@ export function isSupportedPageUrl(url: string | undefined): boolean {
 export async function toggleTranslation(tab: chrome.tabs.Tab | undefined): Promise<void> {
   if (!tab?.id || !isSupportedPageUrl(tab.url)) {
     await showUnsupportedBadge(tab?.id);
-    return;
+    throw new Error(UNSUPPORTED_PAGE_MESSAGE);
   }
 
   const settings = await loadSettings();
@@ -32,8 +33,8 @@ export async function toggleTranslation(tab: chrome.tabs.Tab | undefined): Promi
   try {
     await sendMessageWithContentScriptFallback(tab.id, message);
   } catch (error) {
-    console.warn("Akra Quick Translate failed to toggle translation", error);
     await showUnsupportedBadge(tab.id);
+    throw error;
   }
 }
 
@@ -47,7 +48,7 @@ export function registerBackgroundListeners(): void {
   });
 
   chrome.action.onClicked.addListener((tab) => {
-    void toggleTranslation(tab);
+    void toggleTranslationFromBackgroundEvent(tab);
   });
 
   chrome.runtime.onMessage.addListener((message: ToggleActiveTabMessage, _sender, sendResponse) => {
@@ -72,18 +73,26 @@ export function registerBackgroundListeners(): void {
     }
 
     if (tab?.id) {
-      void toggleTranslation(tab);
+      void toggleTranslationFromBackgroundEvent(tab);
       return;
     }
 
-    void getActiveTab().then(toggleTranslation);
+    void getActiveTab().then(toggleTranslationFromBackgroundEvent);
   });
 
   chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === CONTEXT_MENU_ID) {
-      void toggleTranslation(tab);
+      void toggleTranslationFromBackgroundEvent(tab);
     }
   });
+}
+
+async function toggleTranslationFromBackgroundEvent(tab: chrome.tabs.Tab | undefined): Promise<void> {
+  try {
+    await toggleTranslation(tab);
+  } catch (error) {
+    console.warn("Akra Quick Translate failed to toggle translation", error);
+  }
 }
 
 async function sendMessageWithContentScriptFallback(tabId: number, message: ToggleTranslationMessage): Promise<unknown> {

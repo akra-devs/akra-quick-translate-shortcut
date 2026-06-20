@@ -22,6 +22,7 @@ productLink.href = PRODUCT_URL;
 supportLink.href = SUPPORT_URL;
 privacyLink.href = PRIVACY_URL;
 supportAkraLink.href = DONATION_URL;
+let statusTimeoutId: number | undefined;
 populateLanguageSelect(sourceLanguageSelect);
 populateLanguageSelect(targetLanguageSelect);
 
@@ -41,7 +42,8 @@ form.addEventListener("submit", (event) => {
     showOverlay: showOverlayInput.checked
   }).then(() => {
     statusText.textContent = t("statusSaved");
-    window.setTimeout(() => {
+    window.clearTimeout(statusTimeoutId);
+    statusTimeoutId = window.setTimeout(() => {
       statusText.textContent = "";
     }, 1800);
   });
@@ -49,11 +51,6 @@ form.addEventListener("submit", (event) => {
 
 openShortcutsButton.addEventListener("click", () => {
   void openKeyboardShortcuts();
-});
-
-supportAkraLink.addEventListener("click", (event) => {
-  event.preventDefault();
-  void openDonationPage();
 });
 
 function populateLanguageSelect(select: HTMLSelectElement): void {
@@ -86,12 +83,4 @@ async function updateShortcutLabel(): Promise<void> {
   const commands = await chrome.commands.getAll();
   const command = commands.find((command) => command.name === "toggle-translation");
   shortcutLabel.textContent = command?.shortcut || t("shortcutNotSet");
-}
-
-async function openDonationPage(): Promise<void> {
-  try {
-    await chrome.tabs.create({ url: DONATION_URL });
-  } catch {
-    statusText.textContent = t("errorOpenDonation");
-  }
 }
