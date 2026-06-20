@@ -87,6 +87,14 @@ h2 {
   font-weight: 850;
 }
 
+h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
 .shortcut-callout {
   display: inline-flex;
   width: fit-content;
@@ -193,6 +201,23 @@ a:focus-visible,
   gap: 12px;
 }
 
+.support-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #dbe5f3;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.support-panel p:last-child {
+  margin: 7px 0 0;
+  color: #475569;
+  font-size: 13px;
+}
+
 button,
 a,
 .shortcut-button {
@@ -234,6 +259,20 @@ a,
 a:hover,
 .shortcut-button:hover {
   color: #1d4ed8;
+}
+
+.support-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  white-space: nowrap;
+}
+
+.support-button:hover {
+  border-color: #93c5fd;
+  background: #dbeafe;
 }
 
 kbd {
@@ -288,7 +327,8 @@ kbd {
   }
 
   .language-route,
-  .actions {
+  .actions,
+  .support-panel {
     grid-template-columns: 1fr;
   }
 

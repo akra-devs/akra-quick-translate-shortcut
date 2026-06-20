@@ -51,4 +51,46 @@ describe("background page support gate", () => {
     await expect(toggleTranslation({ id: 4, url: "https://example.com" } as chrome.tabs.Tab)).rejects.toThrow("Cannot access page");
     expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ tabId: 4, text: "!" });
   });
+
+  it("rejects when the content script returns an error result", async () => {
+    vi.useFakeTimers();
+    globalThis.chrome = {
+      action: {
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+        setBadgeText: vi.fn().mockResolvedValue(undefined)
+      },
+      tabs: {
+        sendMessage: vi.fn().mockResolvedValue({
+          status: "error",
+          message: "Chrome Translator API is not available"
+        })
+      }
+    } as unknown as typeof chrome;
+
+    await expect(toggleTranslation({ id: 7, url: "https://example.com" } as chrome.tabs.Tab)).rejects.toThrow(
+      "Chrome Translator API is not available"
+    );
+    expect(chrome.action.setBadgeText).toHaveBeenCalledWith({ tabId: 7, text: "!" });
+  });
+
+  it("returns no_text results without treating them as background failures", async () => {
+    globalThis.chrome = {
+      action: {
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+        setBadgeText: vi.fn().mockResolvedValue(undefined)
+      },
+      tabs: {
+        sendMessage: vi.fn().mockResolvedValue({
+          status: "no_text",
+          message: "No visible text found"
+        })
+      }
+    } as unknown as typeof chrome;
+
+    await expect(toggleTranslation({ id: 8, url: "https://example.com" } as chrome.tabs.Tab)).resolves.toEqual({
+      status: "no_text",
+      message: "No visible text found"
+    });
+    expect(chrome.action.setBadgeText).not.toHaveBeenCalled();
+  });
 });

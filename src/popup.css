@@ -199,6 +199,15 @@ a:hover {
   color: #ffffff;
 }
 
+.popup-footer #support-akra-link {
+  color: #93c5fd;
+  font-weight: 750;
+}
+
+.popup-footer #support-akra-link:hover {
+  color: #dbeafe;
+}
+
 .shortcut-pill {
   display: inline-flex;
   flex-shrink: 0;
@@ -239,4 +248,8 @@ kbd {
 
 #status[data-tone="error"] {
   color: #fca5a5;
+}
+
+#status[data-tone="warning"] {
+  color: #fde68a;
 }

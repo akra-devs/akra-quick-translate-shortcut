@@ -1,5 +1,12 @@
 import { t } from "./shared/i18n";
-import { MESSAGE_TOGGLE_ACTIVE_TAB, MESSAGE_TOGGLE_TRANSLATION, type ToggleActiveTabMessage, type ToggleTranslationMessage } from "./shared/messages";
+import {
+  MESSAGE_TOGGLE_ACTIVE_TAB,
+  MESSAGE_TOGGLE_TRANSLATION,
+  type ToggleActiveTabMessage,
+  type ToggleActiveTabResponse,
+  type ToggleTranslationMessage,
+  type TranslationResult
+} from "./shared/messages";
 import { loadSettings } from "./shared/settings";
 
 const CONTEXT_MENU_ID = "akra-quick-translate-toggle";
@@ -18,7 +25,7 @@ export function isSupportedPageUrl(url: string | undefined): boolean {
   }
 }
 
-export async function toggleTranslation(tab: chrome.tabs.Tab | undefined): Promise<void> {
+export async function toggleTranslation(tab: chrome.tabs.Tab | undefined): Promise<TranslationResult> {
   if (!tab?.id || !isSupportedPageUrl(tab.url)) {
     await showUnsupportedBadge(tab?.id);
     throw new Error(UNSUPPORTED_PAGE_MESSAGE);
@@ -31,7 +38,12 @@ export async function toggleTranslation(tab: chrome.tabs.Tab | undefined): Promi
   };
 
   try {
-    await sendMessageWithContentScriptFallback(tab.id, message);
+    const result = parseTranslationResult(await sendMessageWithContentScriptFallback(tab.id, message));
+    if (result.status === "error") {
+      throw new Error(result.message);
+    }
+
+    return result;
   } catch (error) {
     await showUnsupportedBadge(tab.id);
     throw error;
@@ -58,10 +70,14 @@ export function registerBackgroundListeners(): void {
 
     getActiveTab()
       .then(toggleTranslation)
-      .then(() => sendResponse({ ok: true }))
+      .then((result) => {
+        const response: ToggleActiveTabResponse = { ok: true, result };
+        sendResponse(response);
+      })
       .catch((error: unknown) => {
         const message = error instanceof Error && error.message ? error.message : "Unable to toggle translation";
-        sendResponse({ ok: false, message });
+        const response: ToggleActiveTabResponse = { ok: false, message };
+        sendResponse(response);
       });
 
     return true;
@@ -110,6 +126,39 @@ async function sendMessageWithContentScriptFallback(tabId: number, message: Togg
 
     return chrome.tabs.sendMessage(tabId, message);
   }
+}
+
+function parseTranslationResult(response: unknown): TranslationResult {
+  if (!isRecord(response) || typeof response.status !== "string") {
+    throw new Error("Unable to read translation response");
+  }
+
+  switch (response.status) {
+    case "translated":
+      return { status: "translated", translatedCount: getNumber(response.translatedCount) };
+    case "restored":
+      return { status: "restored", restoredCount: getNumber(response.restoredCount) };
+    case "cancelled":
+      return { status: "cancelled", restoredCount: getNumber(response.restoredCount) };
+    case "no_text":
+      return { status: "no_text", message: getMessage(response.message, "No visible text found") };
+    case "error":
+      return { status: "error", message: getMessage(response.message, "Unable to toggle translation") };
+    default:
+      throw new Error("Unknown translation response");
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getNumber(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function getMessage(value: unknown, fallback: string): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
 }
 
 async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {

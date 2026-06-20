@@ -111,9 +111,37 @@
     "message": "실패",
     "description": "Generic failure status"
   },
-  "statusApplied": {
-    "message": "적용됨",
-    "description": "Translation applied status"
+  "statusTranslated": {
+    "message": "번역됨",
+    "description": "Translation completed status"
+  },
+  "statusRestored": {
+    "message": "원문 복구됨",
+    "description": "Original text restored status"
+  },
+  "statusCancelled": {
+    "message": "취소됨",
+    "description": "Translation cancelled status"
+  },
+  "statusNoText": {
+    "message": "번역할 텍스트가 없습니다",
+    "description": "No translatable text status"
+  },
+  "supportDevelopmentEyebrow": {
+    "message": "후원",
+    "description": "Support development section eyebrow"
+  },
+  "supportDevelopmentTitle": {
+    "message": "개발 후원",
+    "description": "Support development section title"
+  },
+  "supportDevelopmentDescription": {
+    "message": "Akra Quick Translate는 무료로 유지됩니다. 후원은 업데이트와 Chrome 호환성 관리에 도움이 됩니다.",
+    "description": "Support development section description"
+  },
+  "supportDevelopmentButton": {
+    "message": "Akra 후원",
+    "description": "Support development button"
   },
   "errorOpenShortcuts": {
     "message": "단축키 설정을 열 수 없습니다",

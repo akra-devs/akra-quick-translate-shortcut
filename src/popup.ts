@@ -1,7 +1,7 @@
 import "./popup.css";
 import { applyDocumentLocale, applyLocalizedText, t } from "./shared/i18n";
 import { DONATION_URL } from "./shared/links";
-import { MESSAGE_TOGGLE_ACTIVE_TAB } from "./shared/messages";
+import { MESSAGE_TOGGLE_ACTIVE_TAB, type ToggleActiveTabResponse, type TranslationResult } from "./shared/messages";
 import { loadSettings, saveSettings, SUPPORTED_LANGUAGES, type ExtensionSettings } from "./shared/settings";
 
 applyDocumentLocale();
@@ -60,7 +60,7 @@ supportAkraLink.addEventListener("click", (event) => {
 async function initializePopup(): Promise<void> {
   const settings = await loadSettings();
   applySettings(settings);
-  await updateShortcutLabel();
+  await updateShortcutLabelSafely();
 }
 
 function populateLanguageSelect(select: HTMLSelectElement): void {
@@ -105,17 +105,22 @@ async function toggleActiveTab(): Promise<void> {
   setStatus(t("statusRunning"));
 
   try {
-    const response = (await chrome.runtime.sendMessage({ type: MESSAGE_TOGGLE_ACTIVE_TAB })) as
-      | { ok?: boolean; message?: string }
-      | undefined;
+    const response = (await chrome.runtime.sendMessage({ type: MESSAGE_TOGGLE_ACTIVE_TAB })) as ToggleActiveTabResponse | undefined;
 
-    if (response?.ok === false) {
+    if (!response) {
+      setStatus(t("statusFailed"), "error");
+      return;
+    }
+
+    if (!response.ok) {
       setStatus(response.message ?? t("statusFailed"), "error");
       return;
     }
 
-    setStatus(t("statusApplied"));
-    window.setTimeout(() => window.close(), 250);
+    const shouldClose = applyTranslationResultStatus(response.result);
+    if (shouldClose) {
+      window.setTimeout(() => window.close(), 250);
+    }
   } catch (error) {
     const message = error instanceof Error && error.message ? error.message : t("statusFailed");
     setStatus(message, "error");
@@ -124,14 +129,38 @@ async function toggleActiveTab(): Promise<void> {
   }
 }
 
-function setStatus(message: string, tone: "success" | "error" = "success"): void {
+function applyTranslationResultStatus(result: TranslationResult): boolean {
+  switch (result.status) {
+    case "translated":
+      setStatus(t("statusTranslated"));
+      return true;
+    case "restored":
+      setStatus(t("statusRestored"));
+      return true;
+    case "cancelled":
+      setStatus(t("statusCancelled"), "warning");
+      return false;
+    case "no_text":
+      setStatus(t("statusNoText"), "warning");
+      return false;
+    case "error":
+      setStatus(result.message || t("statusFailed"), "error");
+      return false;
+  }
+}
+
+function setStatus(message: string, tone: "success" | "warning" | "error" = "success"): void {
   statusText.textContent = message;
   statusText.dataset.tone = tone;
 }
 
-async function updateShortcutLabel(): Promise<void> {
-  const command = await getToggleCommand();
-  shortcutLabel.textContent = command?.shortcut || t("shortcutNotSet");
+async function updateShortcutLabelSafely(): Promise<void> {
+  try {
+    const command = await getToggleCommand();
+    shortcutLabel.textContent = command?.shortcut || t("shortcutNotSet");
+  } catch {
+    shortcutLabel.textContent = t("shortcutNotSet");
+  }
 }
 
 async function getToggleCommand(): Promise<chrome.commands.Command | undefined> {

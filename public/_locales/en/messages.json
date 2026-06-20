@@ -111,9 +111,37 @@
     "message": "Failed",
     "description": "Generic failure status"
   },
-  "statusApplied": {
-    "message": "Applied",
-    "description": "Translation applied status"
+  "statusTranslated": {
+    "message": "Translated",
+    "description": "Translation completed status"
+  },
+  "statusRestored": {
+    "message": "Original restored",
+    "description": "Original text restored status"
+  },
+  "statusCancelled": {
+    "message": "Cancelled",
+    "description": "Translation cancelled status"
+  },
+  "statusNoText": {
+    "message": "No visible text found",
+    "description": "No translatable text status"
+  },
+  "supportDevelopmentEyebrow": {
+    "message": "Support",
+    "description": "Support development section eyebrow"
+  },
+  "supportDevelopmentTitle": {
+    "message": "Support development",
+    "description": "Support development section title"
+  },
+  "supportDevelopmentDescription": {
+    "message": "Akra Quick Translate stays free. Your support helps with updates and Chrome compatibility work.",
+    "description": "Support development section description"
+  },
+  "supportDevelopmentButton": {
+    "message": "Support Akra",
+    "description": "Support development button"
   },
   "errorOpenShortcuts": {
     "message": "Unable to open shortcuts",

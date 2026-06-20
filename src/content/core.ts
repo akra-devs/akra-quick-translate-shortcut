@@ -1,3 +1,5 @@
+import type { TranslationResult } from "../shared/messages";
+
 export interface ExtensionSettings {
   sourceLanguage: string;
   targetLanguage: string;
@@ -8,13 +10,6 @@ export interface ContentDependencies {
   document?: Document;
   Translator?: AkraTranslatorApi | null;
 }
-
-export type TranslationResult =
-  | { status: "translated"; translatedCount: number }
-  | { status: "restored"; restoredCount: number }
-  | { status: "cancelled"; restoredCount: number }
-  | { status: "no_text"; message: string }
-  | { status: "error"; message: string };
 
 interface TranslationRecord {
   node: Text;

@@ -32,7 +32,7 @@ void loadSettings().then((settings) => {
   targetLanguageSelect.value = settings.targetLanguage;
   showOverlayInput.checked = settings.showOverlay;
 });
-void updateShortcutLabel();
+void updateShortcutLabelSafely();
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -80,10 +80,16 @@ async function openKeyboardShortcuts(): Promise<void> {
   }
 }
 
-async function updateShortcutLabel(): Promise<void> {
-  const commands = await chrome.commands.getAll();
-  const command = commands.find((command) => command.name === "toggle-translation");
-  const shortcut = command?.shortcut || t("shortcutNotSet");
+async function updateShortcutLabelSafely(): Promise<void> {
+  let shortcut = t("shortcutNotSet");
+  try {
+    const commands = await chrome.commands.getAll();
+    const command = commands.find((command) => command.name === "toggle-translation");
+    shortcut = command?.shortcut || t("shortcutNotSet");
+  } catch {
+    shortcut = t("shortcutNotSet");
+  }
+
   shortcutLabel.textContent = shortcut;
   heroShortcutLabel.textContent = shortcut;
 }
