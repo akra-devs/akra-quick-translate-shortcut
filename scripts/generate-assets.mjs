@@ -115,22 +115,28 @@ function wrapWords(text, maxChars) {
 
 function popupMockup() {
   return `
-    <rect width="430" height="385" rx="18" fill="${COLORS.panel}" />
-    <text x="26" y="48" class="panelTitle">Akra Translate</text>
-    <rect x="272" y="25" width="132" height="34" rx="8" fill="#eff6ff" />
-    <text x="292" y="48" class="pill">Shortcut  Alt+T</text>
-    ${selectControl(28, 93, "Source", "English (en)")}
-    ${selectControl(238, 93, "Target", "Korean (ko)")}
-    <rect x="194" y="137" width="42" height="42" rx="9" fill="#ffffff" stroke="${COLORS.line}" />
-    <text x="205" y="165" class="swap">⇄</text>
-    <rect x="28" y="217" width="18" height="18" rx="4" fill="${COLORS.blueDark}" />
-    <path d="M33 226 l4 4 l9 -11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-    <text x="58" y="232" class="labelDark">Status overlay</text>
-    <rect x="28" y="266" width="376" height="52" rx="10" fill="${COLORS.blueDark}" />
-    <text x="144" y="299" class="button">Translate / Restore</text>
-    <text x="28" y="354" class="link">Options</text>
-    <text x="100" y="354" class="link">Support Akra</text>
-    <text x="320" y="354" class="success">Saved</text>
+    <rect width="430" height="385" rx="18" fill="${COLORS.black}" />
+    <circle cx="370" cy="42" r="118" fill="${COLORS.blueDark}" opacity="0.18" />
+    <g transform="translate(22 20)">${brandMark(38)}</g>
+    <text x="70" y="37" class="eyebrow">AKRA QUICK</text>
+    <text x="70" y="59" class="panelTitleLight">Akra Translate</text>
+    <rect x="268" y="21" width="138" height="36" rx="8" fill="#0f172a" stroke="#3b82f6" stroke-opacity="0.45" />
+    <text x="286" y="44" class="pillLight">Shortcut</text>
+    <rect x="354" y="27" width="42" height="24" rx="6" fill="${COLORS.blueDark}" />
+    <text x="361" y="44" class="buttonTiny">Alt+T</text>
+    <rect x="22" y="86" width="386" height="96" rx="10" fill="#ffffff" />
+    ${selectControl(40, 119, "Source", "English (en)", 152)}
+    <rect x="202" y="130" width="42" height="42" rx="9" fill="#eff6ff" stroke="#bfdbfe" />
+    <text x="214" y="158" class="swap">⇄</text>
+    ${selectControl(256, 119, "Target", "Korean", 136)}
+    <rect x="22" y="198" width="386" height="50" rx="10" fill="#0f172a" stroke="#2563eb" stroke-opacity="0.55" />
+    <rect x="42" y="214" width="18" height="18" rx="4" fill="${COLORS.blueDark}" />
+    <path d="M47 223 l4 4 l9 -11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <text x="73" y="228" class="labelLight">Status overlay</text>
+    <rect x="22" y="264" width="386" height="54" rx="10" fill="${COLORS.blueDark}" />
+    <text x="130" y="299" class="button">Translate / Restore</text>
+    <text x="22" y="354" class="linkLight">Options</text>
+    <text x="304" y="354" class="linkLight">Support Akra</text>
   `;
 }
 
@@ -157,24 +163,32 @@ function translatedPageMockup() {
 
 function optionsMockup() {
   return `
-    <rect width="520" height="440" rx="22" fill="${COLORS.surface}" />
-    <text x="34" y="54" class="eyebrowDark">AKRA QUICK TRANSLATE</text>
-    <text x="34" y="96" class="articleTitle">Translation</text>
-    <rect x="34" y="128" width="452" height="230" rx="12" fill="${COLORS.panel}" stroke="${COLORS.line}" />
-    ${selectControl(58, 164, "Source", "English (en)", 190)}
-    ${selectControl(272, 164, "Target", "Korean (ko)", 190)}
-    <text x="243" y="212" class="swap">→</text>
-    <rect x="58" y="262" width="18" height="18" rx="4" fill="${COLORS.blueDark}" />
-    <path d="M63 271 l4 4 l9 -11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-    <text x="88" y="277" class="labelDark">Status overlay</text>
-    <rect x="58" y="310" width="94" height="42" rx="10" fill="${COLORS.blueDark}" />
-    <text x="88" y="337" class="buttonSmall">Save</text>
-    <rect x="172" y="310" width="154" height="42" rx="10" fill="#eff6ff" />
-    <text x="194" y="337" class="pill">Shortcut  Alt+T</text>
-    <text x="34" y="398" class="link">Website</text>
-    <text x="112" y="398" class="link">Support</text>
-    <text x="188" y="398" class="link">Privacy</text>
-    <text x="258" y="398" class="link">Support Akra</text>
+    <rect width="560" height="420" rx="18" fill="#ffffff" />
+    <rect width="230" height="420" rx="18" fill="${COLORS.black}" />
+    <rect x="212" width="36" height="420" fill="${COLORS.black}" />
+    <g transform="translate(36 34)">${brandMark(54)}</g>
+    <text x="36" y="160" class="eyebrow">AKRA QUICK</text>
+    <text x="36" y="248" class="heroSmall">Translation</text>
+    <rect x="36" y="324" width="128" height="38" rx="8" fill="#0f172a" stroke="#3b82f6" stroke-opacity="0.45" />
+    <text x="50" y="348" class="pillLight">Shortcut</text>
+    <rect x="112" y="331" width="42" height="24" rx="6" fill="${COLORS.blueDark}" />
+    <text x="119" y="348" class="buttonTiny">Alt+T</text>
+    <text x="270" y="76" class="eyebrowDark">SETTINGS</text>
+    <text x="270" y="112" class="articleTitle">Settings</text>
+    <rect x="270" y="148" width="250" height="94" rx="10" fill="#f8fafc" stroke="${COLORS.line}" />
+    ${selectControl(288, 182, "Source", "EN", 95)}
+    <rect x="392" y="193" width="38" height="42" rx="9" fill="#eff6ff" />
+    <text x="405" y="221" class="swap">→</text>
+    ${selectControl(438, 182, "Target", "KO", 64)}
+    <rect x="270" y="262" width="176" height="44" rx="9" fill="#ffffff" stroke="${COLORS.line}" />
+    <rect x="288" y="275" width="18" height="18" rx="4" fill="${COLORS.blueDark}" />
+    <path d="M293 284 l4 4 l9 -11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <text x="318" y="289" class="labelDark">Status overlay</text>
+    <rect x="270" y="324" width="86" height="42" rx="9" fill="${COLORS.blueDark}" />
+    <text x="296" y="351" class="buttonSmall">Save</text>
+    <text x="374" y="351" class="link">Shortcut</text>
+    <rect x="448" y="331" width="48" height="28" rx="7" fill="${COLORS.blueDark}" />
+    <text x="456" y="350" class="buttonTiny">Alt+T</text>
   `;
 }
 
@@ -259,11 +273,17 @@ function baseTextCss() {
     .hero { fill: #fff; font-size: 54px; font-weight: 850; letter-spacing: 0; }
     .label { fill: ${COLORS.muted}; font-size: 13px; font-weight: 800; letter-spacing: 0; }
     .labelDark { fill: #334155; font-size: 15px; font-weight: 750; letter-spacing: 0; }
+    .labelLight { fill: #dbeafe; font-size: 15px; font-weight: 750; letter-spacing: 0; }
     .link { fill: ${COLORS.blueDark}; font-size: 14px; font-weight: 800; letter-spacing: 0; }
+    .linkLight { fill: #bfdbfe; font-size: 14px; font-weight: 800; letter-spacing: 0; }
     .marqueeSub { fill: #dbeafe; font-size: 26px; font-weight: 600; letter-spacing: 0; }
     .marqueeTitle { fill: #fff; font-size: 62px; font-weight: 850; letter-spacing: 0; }
     .panelTitle { fill: ${COLORS.text}; font-size: 20px; font-weight: 850; letter-spacing: 0; }
+    .panelTitleLight { fill: #fff; font-size: 20px; font-weight: 850; letter-spacing: 0; }
     .pill { fill: ${COLORS.blueDark}; font-size: 13px; font-weight: 800; letter-spacing: 0; }
+    .pillLight { fill: #dbeafe; font-size: 13px; font-weight: 800; letter-spacing: 0; }
+    .buttonTiny { fill: #fff; font-size: 12px; font-weight: 850; letter-spacing: 0; }
+    .heroSmall { fill: #fff; font-size: 34px; font-weight: 850; letter-spacing: 0; }
     .promoSub { fill: #dbeafe; font-size: 24px; font-weight: 650; letter-spacing: 0; }
     .promoTitle { fill: #fff; font-size: 34px; font-weight: 850; letter-spacing: 0; }
     .sub { fill: #dbeafe; font-size: 24px; font-weight: 600; letter-spacing: 0; }

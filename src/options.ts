@@ -16,6 +16,7 @@ const supportLink = queryRequired<HTMLAnchorElement>("#support-link");
 const privacyLink = queryRequired<HTMLAnchorElement>("#privacy-link");
 const supportAkraLink = queryRequired<HTMLAnchorElement>("#support-akra-link");
 const shortcutLabel = queryRequired<HTMLElement>("#shortcut-label");
+const heroShortcutLabel = queryRequired<HTMLElement>("#hero-shortcut-label");
 const statusText = queryRequired<HTMLParagraphElement>("#status");
 
 productLink.href = PRODUCT_URL;
@@ -82,5 +83,7 @@ async function openKeyboardShortcuts(): Promise<void> {
 async function updateShortcutLabel(): Promise<void> {
   const commands = await chrome.commands.getAll();
   const command = commands.find((command) => command.name === "toggle-translation");
-  shortcutLabel.textContent = command?.shortcut || t("shortcutNotSet");
+  const shortcut = command?.shortcut || t("shortcutNotSet");
+  shortcutLabel.textContent = shortcut;
+  heroShortcutLabel.textContent = shortcut;
 }
