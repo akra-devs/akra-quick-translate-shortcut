@@ -1,0 +1,122 @@
+{
+  "extensionName": {
+    "message": "Akra Quick Translate",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Toggle page translation and original text restore with Chrome's built-in Translator API.",
+    "description": "Extension description"
+  },
+  "actionTitle": {
+    "message": "Akra Quick Translate",
+    "description": "Toolbar action title"
+  },
+  "commandToggleTranslation": {
+    "message": "Toggle page translation",
+    "description": "Keyboard command description"
+  },
+  "contextMenuToggle": {
+    "message": "Toggle page translation",
+    "description": "Context menu item"
+  },
+  "popupHeading": {
+    "message": "Akra Translate",
+    "description": "Popup heading"
+  },
+  "shortcut": {
+    "message": "Shortcut",
+    "description": "Shortcut label"
+  },
+  "openShortcutSettings": {
+    "message": "Open shortcut settings",
+    "description": "Shortcut settings button title"
+  },
+  "source": {
+    "message": "Source",
+    "description": "Source language label"
+  },
+  "target": {
+    "message": "Target",
+    "description": "Target language label"
+  },
+  "swapLanguages": {
+    "message": "Swap languages",
+    "description": "Swap language button label"
+  },
+  "statusOverlay": {
+    "message": "Status overlay",
+    "description": "Status overlay toggle label"
+  },
+  "translateRestore": {
+    "message": "Translate / Restore",
+    "description": "Main translate button"
+  },
+  "options": {
+    "message": "Options",
+    "description": "Options link"
+  },
+  "supportAkra": {
+    "message": "Support Akra",
+    "description": "Donation link"
+  },
+  "optionsTitle": {
+    "message": "Akra Quick Translate Options",
+    "description": "Options page title"
+  },
+  "optionsHeading": {
+    "message": "Translation",
+    "description": "Options page heading"
+  },
+  "translationLanguages": {
+    "message": "Translation languages",
+    "description": "Language settings section label"
+  },
+  "save": {
+    "message": "Save",
+    "description": "Save button"
+  },
+  "productLinks": {
+    "message": "Product links",
+    "description": "Options footer link group label"
+  },
+  "website": {
+    "message": "Website",
+    "description": "Product website link"
+  },
+  "support": {
+    "message": "Support",
+    "description": "Support page link"
+  },
+  "privacy": {
+    "message": "Privacy",
+    "description": "Privacy page link"
+  },
+  "shortcutNotSet": {
+    "message": "Not set",
+    "description": "Shortcut empty state"
+  },
+  "statusSaved": {
+    "message": "Saved",
+    "description": "Settings saved status"
+  },
+  "statusRunning": {
+    "message": "Running",
+    "description": "Translation running status"
+  },
+  "statusFailed": {
+    "message": "Failed",
+    "description": "Generic failure status"
+  },
+  "statusApplied": {
+    "message": "Applied",
+    "description": "Translation applied status"
+  },
+  "errorOpenShortcuts": {
+    "message": "Unable to open shortcuts",
+    "description": "Shortcut page open failure"
+  },
+  "errorOpenDonation": {
+    "message": "Unable to open support page",
+    "description": "Donation page open failure"
+  }
+}

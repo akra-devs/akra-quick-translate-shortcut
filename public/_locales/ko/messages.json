@@ -1,0 +1,122 @@
+{
+  "extensionName": {
+    "message": "Akra Quick Translate",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Chrome 내장 Translator API로 페이지 번역과 원문 복구를 빠르게 전환합니다.",
+    "description": "Extension description"
+  },
+  "actionTitle": {
+    "message": "Akra Quick Translate",
+    "description": "Toolbar action title"
+  },
+  "commandToggleTranslation": {
+    "message": "페이지 번역 토글",
+    "description": "Keyboard command description"
+  },
+  "contextMenuToggle": {
+    "message": "페이지 번역 토글",
+    "description": "Context menu item"
+  },
+  "popupHeading": {
+    "message": "Akra 번역",
+    "description": "Popup heading"
+  },
+  "shortcut": {
+    "message": "단축키",
+    "description": "Shortcut label"
+  },
+  "openShortcutSettings": {
+    "message": "단축키 설정 열기",
+    "description": "Shortcut settings button title"
+  },
+  "source": {
+    "message": "원본",
+    "description": "Source language label"
+  },
+  "target": {
+    "message": "대상",
+    "description": "Target language label"
+  },
+  "swapLanguages": {
+    "message": "언어 바꾸기",
+    "description": "Swap language button label"
+  },
+  "statusOverlay": {
+    "message": "상태 오버레이",
+    "description": "Status overlay toggle label"
+  },
+  "translateRestore": {
+    "message": "번역 / 복구",
+    "description": "Main translate button"
+  },
+  "options": {
+    "message": "옵션",
+    "description": "Options link"
+  },
+  "supportAkra": {
+    "message": "Akra 후원",
+    "description": "Donation link"
+  },
+  "optionsTitle": {
+    "message": "Akra Quick Translate 옵션",
+    "description": "Options page title"
+  },
+  "optionsHeading": {
+    "message": "번역 설정",
+    "description": "Options page heading"
+  },
+  "translationLanguages": {
+    "message": "번역 언어",
+    "description": "Language settings section label"
+  },
+  "save": {
+    "message": "저장",
+    "description": "Save button"
+  },
+  "productLinks": {
+    "message": "제품 링크",
+    "description": "Options footer link group label"
+  },
+  "website": {
+    "message": "웹사이트",
+    "description": "Product website link"
+  },
+  "support": {
+    "message": "지원",
+    "description": "Support page link"
+  },
+  "privacy": {
+    "message": "개인정보",
+    "description": "Privacy page link"
+  },
+  "shortcutNotSet": {
+    "message": "미설정",
+    "description": "Shortcut empty state"
+  },
+  "statusSaved": {
+    "message": "저장됨",
+    "description": "Settings saved status"
+  },
+  "statusRunning": {
+    "message": "실행 중",
+    "description": "Translation running status"
+  },
+  "statusFailed": {
+    "message": "실패",
+    "description": "Generic failure status"
+  },
+  "statusApplied": {
+    "message": "적용됨",
+    "description": "Translation applied status"
+  },
+  "errorOpenShortcuts": {
+    "message": "단축키 설정을 열 수 없습니다",
+    "description": "Shortcut page open failure"
+  },
+  "errorOpenDonation": {
+    "message": "후원 페이지를 열 수 없습니다",
+    "description": "Donation page open failure"
+  }
+}

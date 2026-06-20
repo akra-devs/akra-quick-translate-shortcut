@@ -3,43 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Akra Quick Translate</title>
+    <title data-i18n="extensionName">Akra Quick Translate</title>
   </head>
   <body>
     <main class="popup-shell">
       <header class="popup-header">
-        <h1>Akra Translate</h1>
-        <button id="open-shortcuts" class="shortcut-pill" type="button" title="Open shortcut settings">
-          <span>Shortcut</span>
+        <h1 data-i18n="popupHeading">Akra Translate</h1>
+        <button id="open-shortcuts" class="shortcut-pill" type="button" title="Open shortcut settings" data-i18n-title="openShortcutSettings">
+          <span data-i18n="shortcut">Shortcut</span>
           <kbd id="shortcut-label">Alt+T</kbd>
         </button>
       </header>
 
       <form id="popup-form" class="popup-form">
         <label class="field">
-          <span>Source</span>
+          <span data-i18n="source">Source</span>
           <select id="source-language" name="sourceLanguage"></select>
         </label>
 
-        <button id="swap-languages" class="icon-button" type="button" aria-label="Swap languages" title="Swap languages">
+        <button id="swap-languages" class="icon-button" type="button" aria-label="Swap languages" title="Swap languages" data-i18n-aria-label="swapLanguages" data-i18n-title="swapLanguages">
           &#8644;
         </button>
 
         <label class="field">
-          <span>Target</span>
+          <span data-i18n="target">Target</span>
           <select id="target-language" name="targetLanguage"></select>
         </label>
 
         <label class="toggle-row">
           <input id="show-overlay" type="checkbox" name="showOverlay" />
-          <span>Status overlay</span>
+          <span data-i18n="statusOverlay">Status overlay</span>
         </label>
 
-        <button id="toggle-translation" class="primary-button" type="submit">Translate / Restore</button>
+        <button id="toggle-translation" class="primary-button" type="submit" data-i18n="translateRestore">Translate / Restore</button>
       </form>
 
       <footer class="popup-footer">
-        <a href="options.html" target="_blank" rel="noreferrer">Options</a>
+        <a href="options.html" target="_blank" rel="noreferrer" data-i18n="options">Options</a>
+        <a id="support-akra-link" href="https://ctee.kr/place/akra/donation" target="_blank" rel="noreferrer" data-i18n="supportAkra">Support Akra</a>
         <span id="status" role="status" aria-live="polite"></span>
       </footer>
     </main>
